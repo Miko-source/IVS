@@ -31,7 +31,7 @@ Aby bylo hodnocení spravedlivé a práce efektivní, jsou role rozděleny násl
 
 ---
 
-## 📅 Časový harmonogram projektu
+## Časový harmonogram 
 
 ### Fáze 1: Plánování a Setup (do 15. 3.)
 * [ ] Výběr jazyka/frameworku (C++/Qt, Python/Tkinter, C#/WPF).

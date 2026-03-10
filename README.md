@@ -4,6 +4,9 @@ Tento projekt je zaměřen na vývoj matematické knihovny, GUI kalkulačky a CL
 
 ---
 
+### xbartom00 GUI + MAKEFILE
+### 
+
 ## Návrh rolí v týmu
 
 Aby bylo hodnocení spravedlivé a práce efektivní, jsou role rozděleny následovně. **Pozor:** Všichni členové musí aktivně používat Git a mít vlastní commity pro zisk individuálních bodů.

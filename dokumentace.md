@@ -112,15 +112,23 @@ sudo ./ipk-L4-scan -i
 ### Struktura projektu
 
 ```
-.
-├── main.cpp        # Vstupní bod
-├── tcp.cpp / tcp.h # TCP SYN skenování přes raw sockety a libpcap
-├── udp.cpp / udp.h # Skenování UDP přes ICMP/ICMPv6 odpovědi
-├── Scanner.h       # Defiinuje rozhrní pro síťové skenování 
-├── Scanner_base.cpp/Scanner_base.h  # Implementace pomocných funkcí pro spuštění
-|__ Utils.cpp/Utils.h  #Implementace pomocných funkcí pro síťové skenování
-└── common.h        # Sdílené typy (PortState enum, keep_running flag)
-```
+projekt
+|__src
+  ├── main.cpp        # Vstupní bod
+  ├── tcp.cpp / tcp.h # TCP SYN skenování přes raw sockety a libpcap
+  ├── udp.cpp / udp.h # Skenování UDP přes ICMP/ICMPv6 odpovědi
+  ├── Scanner.h       # Defiinuje rozhrní pro síťové skenování 
+  ├── Scanner_base.cpp/Scanner_base.h  # Implementace pomocných funkcí pro spuštění
+  |__ Utils.cpp/Utils.h  #Implementace pomocných funkcí pro síťové skenování
+  └── common.h        # Sdílené typy (PortState enum, keep_running flag)
+|_Makefile
+|_LICENSE
+|_README.md
+|_CHANGELOG.md
+|
+|_tests
+  |_python.py {testovací skript}
+  ```
 
 ### TCP skenování
 
@@ -135,6 +143,9 @@ sudo ./ipk-L4-scan -i
 | `SYN-ACK` | `open` |
 | `RST` | `closed` |
 | Žádná (po 2 pokusech) | `filtered` |
+
+<img src="tcp_scan.svg" alt="Schéma TCP skenování" width="600">
+
 
 ### UDP skenování
 
@@ -161,6 +172,8 @@ Příklad:
 127.0.0.1 143 tcp filtered
 2001:67c:1220:809::93e5:917 80 tcp open
 ```
+
+<img src="udp_scan.svg" alt="Schéma UDP skenování" width="600">
 
 ### Ošetření signálů
 
@@ -555,6 +568,5 @@ Výsledky `ipk-L4-scan` odpovídají výsledkům `nmap` pro všechny testované 
 - **RFC 2460** — Internet Protocol Version 6. [https://www.rfc-editor.org/rfc/rfc2460](https://www.rfc-editor.org/rfc/rfc2460)
 - **libpcap dokumentace** — [https://www.tcpdump.org/manpages/pcap.3pcap.html](https://www.tcpdump.org/manpages/pcap.3pcap.html)
 - **Linux man pages** — `socket(7)`, `raw(7)`, `ip(7)`, `getaddrinfo(3)`, `pcap_open_live(3)`
-- **IPK Project Assignment** — zadání projektu, FIT VUT Brno, 2024/2025
-<img src="tcp_scan.svg" alt="Schéma TCP skenování" width="600">
-<img src="udp_scan.svg" alt="Schéma UDP skenování" width="600">
+
+

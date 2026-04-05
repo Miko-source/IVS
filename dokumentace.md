@@ -144,7 +144,7 @@ projekt
 | `RST` | `closed` |
 | Žádná (po 2 pokusech) | `filtered` |
 
-<img src="tcp_scan.svg" alt="Schéma TCP skenování" width="600">
+<img src="doc/tcp_scan.svg" alt="Schéma TCP skenování" width="600">
 
 
 ### UDP skenování
@@ -173,7 +173,7 @@ Příklad:
 2001:67c:1220:809::93e5:917 80 tcp open
 ```
 
-<img src="udp_scan.svg" alt="Schéma UDP skenování" width="600">
+<img src="doc/udp_scan.svg" alt="Schéma UDP skenování" width="600">
 
 ### Ošetření signálů
 

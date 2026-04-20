@@ -40,7 +40,7 @@ Běh interpretu je logicky rozdělen do několika fází.
 
 Níže uvedený diagram zachycuje zjednodušenou architekturu aplikace. Třídy ze vstupního AST modelu (šablony) jsou uvedeny v horní části a zjednodušeny pro přehlednost. Jádro implementace je tvořeno třídou `Interpreter` a hierarchií běhových objektů `SOLObject`.
 
-![UML Diagram tříd](mermaid-version_final.png)
+![UML Diagram tříd](version_final.png)
 ## 3. Hlavní interní datové struktury
 
 ### `Environment`
@@ -97,4 +97,3 @@ Během vypracování projektu byl využit generativní jazykový model **Google 
 **Doložení:** Kopie nebo přepis konverzací s jazykovým modelem je přiložen v referencovaném souboru uloženém v kořeni projektu podle specifikace.
 
 ---
-a

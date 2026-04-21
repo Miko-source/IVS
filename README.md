@@ -23,7 +23,7 @@ Běh interpretu je logicky rozdělen do tří hlavních fází a klíčovým mec
 
 ### Průběh interpretace
 
-* **Fáze 1: Načtení a syntaktická analýza**
+### **Fáze 1: Načtení a syntaktická analýza**
     Ze vstupního souboru ve formátu SOL-XML je načten zdrojový kód. K jeho zpracování je využita knihovna `lxml` a pomocí Pydantic modelů z dodané šablony je sestaven abstraktní syntaktický strom (AST) reprezentovaný kořenovým objektem třídy `Program`.
 
 * **Fáze 2: Statická sémantická analýza**

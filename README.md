@@ -122,11 +122,11 @@ Tento návrhový vzor je ukázkově využit ve třídě `Environment` pro modelo
 
 ### Lexikální kontext pro `super` a tvorbu atributů
 
-Specifikace vyžaduje, aby klíčové slovo `super` nevyhledávalo metody podle třídy samotné instance, ale podle nadtřídy té třídy, ve které byla metoda fyzicky definována. Tento záludný problém lexikálního kontextu byl vyřešen rozšířením třídy `Environment` o atribut `lexical_class`. Během vyhledávání metod se do nového prostředí invokovaného bloku tento kontext uloží, a tím pádem mají všechny případné zanořené bloky přesnou informaci o tom, jaké třídě jejich definice přísluší.
+* Specifikace vyžaduje, aby klíčové slovo `super` nevyhledávalo metody podle třídy samotné instance, ale podle nadtřídy té třídy, ve které byla metoda fyzicky definována. Tento záludný problém lexikálního kontextu byl vyřešen rozšířením třídy `Environment` o atribut `lexical_class`. Během vyhledávání metod se do nového prostředí invokovaného bloku tento kontext uloží, a tím pádem mají všechny případné zanořené bloky přesnou informaci o tom, jaké třídě jejich definice přísluší.
 
 ### Integrace testovacího nástroje a překladače `sol2xml`
 
-Aby mohl testovací nástroj spolehlivě provádět end-to-end testy (kategorie `COMBINED`) nad zdrojovými kódy v jazyce SOL26, byla do odevzdaného archivu úmyslně přidána složka `sol2xml` s referenčním překladačem. 
+* Aby mohl testovací nástroj spolehlivě provádět end-to-end testy (kategorie `COMBINED`) nad zdrojovými kódy v jazyce SOL26, byla do odevzdaného archivu úmyslně přidána složka `sol2xml` s referenčním překladačem. 
 ---
 
 ## 6. Možnosti dalšího rozšiřování

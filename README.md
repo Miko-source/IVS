@@ -49,7 +49,7 @@ Běh interpretu je logicky rozdělen do tří hlavních fází a klíčovým mec
           block_arg0 = cast(SOLBlock, args[0])
           return self.evaluate_block(block_arg0.internal_value, block_arg0.environment)
       ```
-    * **Cykly (`whileTrue:`):** Cyklus je implementován jako zpráva zaslaná instanci třídy `Block`. Interpret v nativní smyčce nejprve vyhodnotí blok příjemce (podmínku), a pokud vrací objekt třídy `True`, provede blok předaný v argumentu (tělo cyklu).
+    * **Cykly (`whileTrue:`):** Cyklus je implementován jako zpráva zaslaná instanci třídy `Block`. Interpret ve smyčce nejprve vyhodnotí blok příjemce (podmínku), a pokud vrací objekt třídy `True`, provede blok předaný v argumentu (tělo cyklu).
       ```python
       # Ukázka z interpreter.py (vyhodnocení pro třídu Block)
       if selector == "whileTrue:" and len(args) == 1:

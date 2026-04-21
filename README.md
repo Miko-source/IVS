@@ -187,6 +187,6 @@ Vygenerovaný kód jsem proto neaplikoval bezmyšlenkovitě, ale využil jsem je
 V pozdějších fázích projektu, jako byla například implementace statické sémantické kontroly, jsem již asistenta využíval striktně inženýrským a cíleným způsobem. Mé dotazy směřovaly na vysvětlení konkrétní úzké problematiky, diskuzi nad architekturou a hledání chyb (debugging) v mnou již napsaném kódu.
 Při tvorbě dokumentace jsem AI nástroj použil v souladu s pravidly k stylistickým a gramatickým opravám mého textu .
 
-**Link:** Kopie nebo přepis konverzací s jazykovým modelem je přiložen v referencovaném souboru uloženém v kořeni projektu podle specifikace.
+**Link:** (https://gemini.google.com/share/f60ee1ef97ca)
 
 ---

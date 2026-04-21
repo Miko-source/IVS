@@ -173,7 +173,12 @@ Architektura s centralizovanou metodou `send_message` umožňuje snadnou integra
 
 Během vypracování projektu byl využit generativní jazykový model **Google Gemini** jako programátorský asistent.
 
-**Způsob využití:** Model byl použit především jako partner pro diskuzi nad správným pochopením složitějších a méně jasných částí zadání (např. interpretace kontextu u klíčového slova `super` v kombinaci se zanořenými uzávěry), pro efektivní ladění skrytých běhových chyb v testovacím kontejneru a k technické pomoci se správným zpracováním standardního vstupu v jazyce PHP a Python (`proc_open`, roury a čtení z `stdin`).
+**Způsob využití:**
+Během rané fáze vývoje projektu jsem nástroje umělé inteligence nevyužíval zcela optimálním způsobem. Mé úvodní dotazy byly příliš obecné, což vedlo k tomu, že mi jazykový model vygeneroval rozsáhlejší ukázky kódu. Uvědomil jsem si však, že takový přístup neodpovídá inženýrskému cíli projektu.
+Vygenerovaný kód jsem proto neaplikoval bezmyšlenkovitě, ale využil jsem jej primárně jako studijní materiál a referenční kostru. Tento postup mi pomohl pochopit podkladovou problematiku a zorientovat se v technologiích, se kterými jsem do té doby neměl takovou praxi – ukázalo mi to například, jak efektivně využít iterátory pro prohledávání souborů v PHP nebo jak správně nastavit multi-stage build v konfiguračním souboru kontejneru.
+
+V pozdějších fázích projektu, jako byla například implementace statické sémantické kontroly, jsem již asistenta využíval striktně inženýrským a cíleným způsobem. Mé dotazy směřovaly na vysvětlení konkrétní úzké problematiky, diskuzi nad architekturou a hledání chyb (debugging) v mnou již napsaném kódu.
+Při tvorbě dokumentace jsem AI nástroj použil v souladu s pravidly k stylistickým a gramatickým opravám mého textu .
 
 **Doložení:** Kopie nebo přepis konverzací s jazykovým modelem je přiložen v referencovaném souboru uloženém v kořeni projektu podle specifikace.
 

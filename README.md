@@ -19,21 +19,49 @@
 
 ## 1. Celkový návrh řešení
 
-Běh interpretu je logicky rozdělen do několika fází.
+Běh interpretu je logicky dekomponován do tří hlavních fází a opírá se o centrální mechanismus předávání zpráv.
 
-**Fáze 1 – Načtení a syntaktická analýza :** V první fázi probíhá načtení zdrojového kódu ze souboru ve formátu SOL-XML. Tento soubor je zpracován knihovnou `lxml` a pomocí Pydantic modelů dodaných v šabloně je z něj sestaven abstraktní syntaktický strom (AST), jehož kořenem je objekt třídy `Program`.
+### Průběh interpretace
 
-**Fáze 2 – Statická sémantická analýza:** Jakmile je AST úspěšně sestaven, vstupuje do hry statická sémantická analýza, která je izolována ve třídě `SemanticAnalyzer`. Před samotným spuštěním interpretace projde tento analyzátor celý strom a prověří dodržení statických pravidel jazyka. Kontrolují se zejména:
+* **Fáze 1: Načtení a syntaktická analýza**
+    Ze vstupního souboru ve formátu SOL-XML je načten zdrojový kód. K jeho zpracování je využita knihovna `lxml` a pomocí Pydantic modelů z dodané šablony je sestaven abstraktní syntaktický strom (AST) reprezentovaný kořenovým objektem třídy `Program`.
 
-- existence hlavního vstupního bodu programu (třída `Main` a bezparametrická metoda `run`),
-- platnost hierarchie dědičnosti (zda nadtřídy existují),
-- kolize v názvech tříd a parametrů bloku,
-- shoda arity selektorů s aritou deklarovaných metodových bloků.
+* **Fáze 2: Statická sémantická analýza**
+    Sestavený AST je následně zpracován izolovanou instancí třídy `SemanticAnalyzer`. Tento analyzátor projde celý strom a před samotným spuštěním programu ověří dodržení statických pravidel jazyka. Kontrolována je zejména:
+    * existence hlavního vstupního bodu (třída `Main` a bezparametrická metoda `run`),
+    * platnost hierarchie dědičnosti (existence definovaných nadtříd),
+    * absence kolizí v názvech formálních parametrů uvnitř bloků,
+    * shoda arity deklarovaných selektorů s aritou příslušných metodových bloků.
 
-**Fáze 3 – Spuštění:** Pokud program projde analýzou bez chyb, interpret přistoupí ke spuštění. Vytvoří se úvodní instance třídy `Main` a inicializuje se globální prostředí (`Environment`). Prostředí si mimo jiné pamatuje aktuální kontext objektu (`self_obj` a `super_obj`) a lexikálního vlastníka právě vykonávané metody (`lexical_class`). Následně se zahájí vyhodnocování bloku metody `run`.
+* **Fáze 3: Spuštění a inicializace kontextu**
+    Po úspěšné analýze je vytvořena úvodní instance třídy `Main` a inicializuje se globální prostředí vázané na instanci třídy `Environment`. Toto prostředí uchovává aktuální kontext (`self_obj`, `super_obj`) a lexikálního vlastníka vyhodnocované metody (`lexical_class`), což je nezbytné pro správné fungování lexikálních uzávěrů a klíčového slova `super`. Běh programu je zahájen vyhodnocením bloku metody `run`.
 
-**Jádro interpretace – předávání zpráv:** Srdcem celé interpretace je proces předávání zpráv, implementovaný v metodě `send_message`. Jelikož je jazyk SOL26 čistě objektový, je i vyhodnocování operací (včetně aritmetiky či přístupu k atributům) realizováno zasíláním zpráv. Metoda `send_message` dynamicky reaguje na typ příjemce (potomci `SOLObject` a `ClassLiteral`). Nejdříve se pokusí odbavit zprávu jako vestavěnou operaci základních typů. Pokud se nejedná o vestavěnou metodu, interpret začne prohledávat uživatelsky definované metody v řetězci dědičnosti. Hledání zohledňuje lexikální kontext (`is_self`, `is_super`) a v případě nenalezení metody přechází k pokusu o čtení či zápis instančních atributů, u kterých opět hlídá případné kolize s metodami.
+### Jádro interpretace a řízení toku
 
+* **Předávání zpráv:** Srdcem interpretace je metoda `send_message`. Jelikož je SOL26 čistě objektový jazyk, veškeré operace (včetně aritmetiky či přístupu k atributům) jsou realizovány výhradně zasíláním zpráv. Metoda `send_message` dynamicky reaguje na třídu příjemce (potomci `SOLObject` a `ClassLiteral`). Nejprve zkouší odbavit vestavěné operace základních typů. V případě uživatelských tříd prohledává řetězec dědičnosti s ohledem na lexikální kontext (`is_self`, `is_super`) a při nenalezení metody přechází k obsluze instančních atributů (přičemž detekuje kolize s bezparametrickými metodami).
+
+* **Řízení toku programu (podmínky a cykly):** Řízení toku není v jazyce SOL26 řešeno dedikovanými syntaktickými uzly (např. if/while příkazy), ale plně využívá čistě objektového přístupu a předávání zpráv.
+    * **Podmínky (`ifTrue:ifFalse:`):** Jsou realizovány zasláním zprávy instancím vestavěných tříd `SOLTrue` a `SOLFalse`. Třída `True` jednoduše provede první blok, zatímco `False` ignoruje první a provede druhý blok.
+      ```python
+      # Ukázka z interpreter.py (vyhodnocení pro třídu True)
+      if selector == "ifTrue:ifFalse:" and len(args) == 2:
+          # ... validace arity ...
+          block_arg0 = cast(SOLBlock, args[0])
+          return self.evaluate_block(block_arg0.internal_value, block_arg0.environment)
+      ```
+    * **Cykly (`whileTrue:`):** Cyklus je implementován jako zpráva zaslaná instanci třídy `Block`. Interpret v nativní smyčce nejprve vyhodnotí blok příjemce (podmínku), a pokud vrací objekt třídy `True`, provede blok předaný v argumentu (tělo cyklu).
+      ```python
+      # Ukázka z interpreter.py (vyhodnocení pro třídu Block)
+      if selector == "whileTrue:" and len(args) == 1:
+          body_obj = args[0]
+          while_res: SOLObject = SOLNil()
+          while True:
+              cond_result = self.send_message(receiver, "value", [], False, False, env)
+              if cond_result.class_name != "True":
+                  break
+              while_res = self.send_message(body_obj, "value", [], False, False, env)
+          return while_res
+      ```
 ---
 
 ## 2. UML Diagram tříd

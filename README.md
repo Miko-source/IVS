@@ -126,8 +126,7 @@ Specifikace vyžaduje, aby klíčové slovo `super` nevyhledávalo metody podle 
 
 ### Integrace testovacího nástroje a překladače `sol2xml`
 
-Aby mohl integrační testovací nástroj (vyvinutý v PHP) spolehlivě provádět end-to-end testy (kategorie `COMBINED`) nad zdrojovými kódy přímo v jazyce SOL26, byla do odevzdaného archivu (a sestavovaného Docker obrazu) úmyslně přidána složka `sol2xml` s referenčním překladačem. Toto řešení zajišťuje, že kontejner je pro komplexní testy plně soběstačný a tester neselže na chybějící spustitelný soubor překladače.
-
+Aby mohl testovací nástroj spolehlivě provádět end-to-end testy (kategorie `COMBINED`) nad zdrojovými kódy v jazyce SOL26, byla do odevzdaného archivu úmyslně přidána složka `sol2xml` s referenčním překladačem. 
 ---
 
 ## 6. Možnosti dalšího rozšiřování

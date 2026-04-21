@@ -36,13 +36,18 @@ Běh interpretu je logicky rozdělen do tří hlavních fází a klíčovým mec
     * shoda arity deklarovaných selektorů s aritou příslušných metodových bloků.
 
 * **Fáze 3: Spuštění a inicializace kontextu**
+  
     Po úspěšné analýze je vytvořena úvodní instance třídy `Main` a inicializuje se globální prostředí vázané na instanci třídy `Environment`. Toto prostředí uchovává aktuální kontext (`self_obj`, `super_obj`) a  vlastníka vyhodnocované metody (`lexical_class`), což je nezbytné pro správné fungování lexikálních uzávěrů a klíčového slova `super`. Běh programu je zahájen vyhodnocením bloku metody `run`.
 
 ### Jádro interpretace a řízení toku
 
-* **Předávání zpráv:** Srdcem interpretace je metoda `send_message`. Jelikož je SOL26 čistě objektový jazyk, veškeré operace (včetně aritmetiky či přístupu k atributům) jsou realizovány výhradně zasíláním zpráv. Metoda `send_message` dynamicky reaguje na třídu příjemce (potomci `SOLObject` a `ClassLiteral`). Nejprve zkouší odbavit vestavěné operace základních typů. V případě uživatelských tříd prohledává řetězec dědičnosti s ohledem na lexikální kontext (`is_self`, `is_super`) a při nenalezení metody přechází k obsluze instančních atributů (přičemž detekuje kolize s bezparametrickými metodami).
+* **Předávání zpráv:**
 
-* **Řízení toku programu (podmínky a cykly):** Řízení toku není v jazyce SOL26 řešeno if/while příkazy, ale plně využívá čistě objektového přístupu a předávání zpráv.
+ Srdcem interpretace je metoda `send_message`. Jelikož je SOL26 čistě objektový jazyk, veškeré operace (včetně aritmetiky či přístupu k atributům) jsou realizovány výhradně zasíláním zpráv. Metoda `send_message` dynamicky reaguje na třídu příjemce (potomci `SOLObject` a `ClassLiteral`). Nejprve zkouší odbavit vestavěné operace základních typů. V případě uživatelských tříd prohledává řetězec dědičnosti s ohledem na lexikální kontext (`is_self`, `is_super`) a při nenalezení metody přechází k obsluze instančních atributů (přičemž detekuje kolize s bezparametrickými metodami).
+
+* **Řízení toku programu (podmínky a cykly):**
+*
+* Řízení toku není v jazyce SOL26 řešeno if/while příkazy, ale plně využívá čistě objektového přístupu a předávání zpráv.
     * **Podmínky (`ifTrue:ifFalse:`):** Jsou realizovány zasláním zprávy instancím vestavěných tříd `SOLTrue` a `SOLFalse`. Třída `True` jednoduše provede první blok, zatímco `False` ignoruje první a provede druhý blok.
       ```python
       # Ukázka z interpreter.py (vyhodnocení pro třídu True)

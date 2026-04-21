@@ -82,10 +82,21 @@ Aby mohl integrační testovací nástroj (vyvinutý v PHP) spolehlivě provád�
 
 Díky objektovému návrhu by zavedení polí znamenalo pouze přidání nové třídy `SOLArray`, která by dědila ze `SOLObject`. Její interní reprezentací (`internal_value`) by byl standardní datový typ `list` z Pythonu. V metodě `send_message` by pak přibyly větve pro odchycení specifických selektorů na tuto třídu (např. `add:`, `at:`, `size`). V paměťovém modelu jazyka SOL26 by instance polí fungovaly transparentně jako jakýkoliv jiný uživatelský objekt, čímž by se plně dodržela čistá objektovost jazyka.
 
-### Rozšíření o výjimky *(Try-Catch mechanismus)*
+### Rozšíření o mechanismus výjimek (`on:do:` a `signal`)
 
-V současném návrhu jsou chyby odchytávány vyhozením Python výjimky `InterpreterError`, která program okamžitě ukončí s příslušným návratovým kódem. Přidání záchytu chyb přímo do jazyka SOL26 by obnášelo vytvoření mechanismu zasílání zpráv `on:do:` bloku kódu (např. instanci `SOLBlock`). Při vyhodnocení bloku v Pythonu (v metodě `evaluate_block`) by se existující volání obalilo do nativního bloku `try-except`, který by v případě zachycení chyby nevypsal zprávu na `stderr` a neukončil proces, ale místo toho by vyhodnotil blok obsluhy dodaný uživatelem (blok za selektorem `do:`).
+Architektura s centralizovanou metodou `send_message` umožňuje snadnou integraci výjimek. Pro řízení toku a tzv. stack unwinding (probublávání zásobníku) se přímo využije nativní systém výjimek jazyka Python. Úpravy by spočívaly ve 4 krocích:
 
+1. **Interní reprezentace (Třída `SOLException`)**
+   Vytvoří se nová třída dědící z nativní `Exception` z Pythonu. Bude sloužit jako přepravka – jako svůj atribut si ponese přímo instanci `SOLObject` (výjimku vytvořenou uvnitř jazyka SOL26).
+
+2. **Vyhození výjimky (Zpráva `signal`)**
+   Do společné obsluhy předků (fallback pro `Object`) v metodě `send_message` se přidá selektor `signal`. Jeho chování bude velmi prosté: jednoduše vyhodí aktuálního příjemce zprávy pomocí `raise SOLException(receiver)`.
+
+3. **Zachycení výjimky (Zpráva `on:do:` pro `Block`)**
+   Mezi operace třídy `Block` se přidá selektor `on:do:`. Samotné spuštění bloku v Pythonu se obalí do `try-except SOLException`. V bloku `except` se přes funkci `inherits_from` ověří, zda vyhozený objekt odpovídá odchytávané třídě. Pokud ano, spustí se záchranný `do:` blok. Pokud ne, výjimka se přepošle o úroveň výš (`raise`).
+
+4. **Výpis zásobníku (Stack Trace) a nezachycené chyby**
+   Základní řídící smyčka se rozšíří o sledování historie volání – při vstupu do metody se do seznamu (call stacku) zapíše jméno třídy a selektoru, při návratu se odstraní. Hlavní volání v metodě `execute` se obalí finálním `try-except`. Pokud výjimka probublá až sem, interpret vypíše nasbíraný stack trace na `stderr` a proces korektně ukončí chybovým kódem.
 ---
 
 ## 7. Využití nástrojů umělé inteligence

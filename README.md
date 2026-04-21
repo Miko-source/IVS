@@ -171,7 +171,7 @@ Architektura s centralizovanou metodou `send_message` umožňuje snadnou integra
 
 ## 7. Využití nástrojů umělé inteligence
 
-Během vypracování projektu byl využit generativní jazykový model **Google Gemini** jako programátorský asistent.
+Během vypracování projektu byl využit generativní jazykový model **Google Gemini**.
 
 **Způsob využití:**
 Během rané fáze vývoje projektu jsem nástroje umělé inteligence nevyužíval zcela optimálním způsobem. Mé úvodní dotazy byly příliš obecné, což vedlo k tomu, že mi jazykový model vygeneroval rozsáhlejší ukázky kódu. Uvědomil jsem si však, že takový přístup neodpovídá inženýrskému cíli projektu.
@@ -180,6 +180,6 @@ Vygenerovaný kód jsem proto neaplikoval bezmyšlenkovitě, ale využil jsem je
 V pozdějších fázích projektu, jako byla například implementace statické sémantické kontroly, jsem již asistenta využíval striktně inženýrským a cíleným způsobem. Mé dotazy směřovaly na vysvětlení konkrétní úzké problematiky, diskuzi nad architekturou a hledání chyb (debugging) v mnou již napsaném kódu.
 Při tvorbě dokumentace jsem AI nástroj použil v souladu s pravidly k stylistickým a gramatickým opravám mého textu .
 
-**Doložení:** Kopie nebo přepis konverzací s jazykovým modelem je přiložen v referencovaném souboru uloženém v kořeni projektu podle specifikace.
+**Link:** Kopie nebo přepis konverzací s jazykovým modelem je přiložen v referencovaném souboru uloženém v kořeni projektu podle specifikace.
 
 ---

@@ -1,4 +1,4 @@
-# Dokumentace k projektu IPP 2025/2026
+# Dokumentace IPP 2025/2026
 ## Interpret SOL26
 
 > **Autor:** Mikoláš Bartoň (xbartom00)
@@ -45,7 +45,7 @@ Běh interpretu je logicky rozdělen do tří hlavních fází a klíčovým mec
 
  Srdcem interpretace je metoda `send_message`. Jelikož je SOL26 čistě objektový jazyk, veškeré operace (včetně aritmetiky či přístupu k atributům) jsou realizovány výhradně zasíláním zpráv. Metoda `send_message` dynamicky reaguje na třídu příjemce (potomci `SOLObject` a `ClassLiteral`). Nejprve zkouší odbavit vestavěné operace základních typů. V případě uživatelských tříd prohledává řetězec dědičnosti s ohledem na lexikální kontext (`is_self`, `is_super`) a při nenalezení metody přechází k obsluze instančních atributů (přičemž detekuje kolize s bezparametrickými metodami).
 
-* **Řízení toku programu (podmínky a cykly):**
+ **Řízení toku programu (podmínky a cykly):**
 
 * Řízení toku není v jazyce SOL26 řešeno if/while příkazy, ale plně využívá čistě objektového přístupu a předávání zpráv.
     * **Podmínky (`ifTrue:ifFalse:`):** Jsou realizovány zasláním zprávy instancím vestavěných tříd `SOLTrue` a `SOLFalse`. Třída `True` jednoduše provede první blok, zatímco `False` ignoruje první a provede druhý blok.

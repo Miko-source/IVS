@@ -21,7 +21,7 @@
 
 Běh interpretu je logicky rozdělen do několika fází.
 
-**Fáze 1 – Načtení a parsování:** V první fázi probíhá načtení zdrojového kódu ze souboru ve formátu SOL-XML. Tento soubor je zpracován knihovnou `lxml` a pomocí Pydantic modelů dodaných v šabloně je z něj sestaven abstraktní syntaktický strom (AST), jehož kořenem je objekt třídy `Program`.
+**Fáze 1 – Načtení a syntaktická analýza :** V první fázi probíhá načtení zdrojového kódu ze souboru ve formátu SOL-XML. Tento soubor je zpracován knihovnou `lxml` a pomocí Pydantic modelů dodaných v šabloně je z něj sestaven abstraktní syntaktický strom (AST), jehož kořenem je objekt třídy `Program`.
 
 **Fáze 2 – Statická sémantická analýza:** Jakmile je AST úspěšně sestaven, vstupuje do hry statická sémantická analýza, která je izolována ve třídě `SemanticAnalyzer`. Před samotným spuštěním interpretace projde tento analyzátor celý strom a prověří dodržení statických pravidel jazyka. Kontrolují se zejména:
 
@@ -72,11 +72,13 @@ Specifikace vyžaduje, aby klíčové slovo `super` nevyhledávalo metody podle 
 
 ### Integrace testovacího nástroje a překladače `sol2xml`
 
-Aby mohl integrační testovací nástroj (vyvinutý v PHP) spolehlivě provádět end-to-end testy (kategorie `COMBINED`) nad zdrojovými kódy přímo v jazyce SOL26, byla do odevzdaného archivu (a sestavovaného Docker obrazu) úmyslně přidána složka `sol2xml` s referenčním překladačem. Toto řešení zajišťuje, že kontejner je pro komplexní testy plně soběstačný a tester neselže na chybějící binárce překladače.
+Aby mohl integrační testovací nástroj (vyvinutý v PHP) spolehlivě provádět end-to-end testy (kategorie `COMBINED`) nad zdrojovými kódy přímo v jazyce SOL26, byla do odevzdaného archivu (a sestavovaného Docker obrazu) úmyslně přidána složka `sol2xml` s referenčním překladačem. Toto řešení zajišťuje, že kontejner je pro komplexní testy plně soběstačný a tester neselže na chybějící spustitelný soubor překladače.
 
 ---
 
 ## 6. Možnosti dalšího rozšiřování
+
+### Rozšíření o mechanismus doesNotUnderstand
 
 1. **Nová běhová třída**
    * V paměťovém modelu (konkrétně v `runtime.py`) by vznikla nová třída `SOLMessage` dědící ze `SOLObject`.
@@ -97,17 +99,18 @@ Aby mohl integrační testovací nástroj (vyvinutý v PHP) spolehlivě provád�
    * Pokud by interpret při prohledávání zásobníku zjistil, že stejný příjemce už řeší DNU pro totožný selektor, okamžitě by vyvolal běhovou chybu 51.
    * Po úspěšném odbavení by se tento záznam ze zásobníku opět odebral.
 
-4. **Fallback v logice třídy `Object`**
-   * Pro zajištění zpětné kompatibility by se do bloku zděděných metod třídy `Object` přidal selektor `doesNotUnderstand:`.
-   * Jeho výchozí implementací by bylo právě původní chování – vyhození výjimky `InterpreterError(ErrorCode.INT_DNU, ...)`.
-   * Uživatelské třídy by tak měly volnost tuto metodu přepsat. Pokud by to neudělaly, program by bezpečně spadl zcela standardním způsobem.
+4. **Výchozí fallback v základní třídě `SOLObject`**
+   * Pro zajištění zpětné kompatibility by se chování integrovalo přímo do třídy `SOLObject`.
+   * V této třídě by se definovala nativní metoda obsluhující selhání (např. metoda simulující zprávu `doesNotUnderstand:`).
+   * Její implementací by bylo právě původní chování – vyhození výjimky `InterpreterError(ErrorCode.INT_DNU, ...)`.
+   * Pokud by uživatelská třída v jazyce SOL26 tuto zprávu nepřepsala vlastní implementací, interpret by bezpečně propadl až k tomuto nativnímu chování v `SOLObject` a program by spadl standardním způsobem.
 
 ### Rozšíření o mechanismus výjimek (`on:do:` a `signal`)
 
 Architektura s centralizovanou metodou `send_message` umožňuje snadnou integraci výjimek. Pro řízení toku a tzv. stack unwinding (probublávání zásobníku) se přímo využije nativní systém výjimek jazyka Python. Úpravy by spočívaly ve 4 krocích:
 
 1. **Interní reprezentace (Třída např. `SOLException`)**
-   Vytvoří se nová třída dědící z nativní třídy `Exception` z Pythonu. Bude sloužit jako přepravka – jako atribut si ponese přímo instanci třídz `SOLObject` (výjimku vytvořenou uvnitř jazyka SOL26).
+   Vytvoří se nová třída dědící z nativní třídy `Exception` z Pythonu. Bude sloužit jako přepravka – jako atribut si ponese přímo instanci třídy `SOLObject` (výjimku vytvořenou uvnitř jazyka SOL26).
 
 2. **Vyhození výjimky (Zpráva `signal`)**
     V metodě send_message by se v sekci fallbacků pro Object přidal nový bezparametrický selektor signal. Reakcí na tuto zprávu by bylo interní výjimky s předáním příjemce zprávy: `raise SOLException(receiver)`.

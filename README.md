@@ -86,17 +86,17 @@ Díky objektovému návrhu by zavedení polí znamenalo pouze přidání nové t
 
 Architektura s centralizovanou metodou `send_message` umožňuje snadnou integraci výjimek. Pro řízení toku a tzv. stack unwinding (probublávání zásobníku) se přímo využije nativní systém výjimek jazyka Python. Úpravy by spočívaly ve 4 krocích:
 
-1. **Interní reprezentace (Třída `SOLException`)**
-   Vytvoří se nová třída dědící z nativní `Exception` z Pythonu. Bude sloužit jako přepravka – jako svůj atribut si ponese přímo instanci `SOLObject` (výjimku vytvořenou uvnitř jazyka SOL26).
+1. **Interní reprezentace (Třída např. `SOLException`)**
+   Vytvoří se nová třída dědící z nativní třídy `Exception` z Pythonu. Bude sloužit jako přepravka – jako atribut si ponese přímo instanci třídz `SOLObject` (výjimku vytvořenou uvnitř jazyka SOL26).
 
 2. **Vyhození výjimky (Zpráva `signal`)**
-   Do společné obsluhy předků (fallback pro `Object`) v metodě `send_message` se přidá selektor `signal`. Jeho chování bude velmi prosté: jednoduše vyhodí aktuálního příjemce zprávy pomocí `raise SOLException(receiver)`.
+    V metodě send_message by se v sekci fallbacků pro Object přidal nový bezparametrický selektor signal. Reakcí na tuto zprávu by bylo interní výjimky s předáním příjemce zprávy: `raise SOLException(receiver)`.
 
 3. **Zachycení výjimky (Zpráva `on:do:` pro `Block`)**
-   Mezi operace třídy `Block` se přidá selektor `on:do:`. Samotné spuštění bloku v Pythonu se obalí do `try-except SOLException`. V bloku `except` se přes funkci `inherits_from` ověří, zda vyhozený objekt odpovídá odchytávané třídě. Pokud ano, spustí se záchranný `do:` blok. Pokud ne, výjimka se přepošle o úroveň výš (`raise`).
+   Mezi operace třídy `Block` se přidá selektor `on:do:`. Samotné spuštění bloku v Pythonu se obalí do `try-except SOLException`. V bloku `except` se přes funkci `inherits_from` ověří, zda vyhozený objekt odpovídá odchytávané třídě. Pokud ano, spustí se záchranný `do:` blok. Pokud ne, výjimka se přepošle o úroveň výš.
 
 4. **Výpis zásobníku (Stack Trace) a nezachycené chyby**
-   Základní řídící smyčka se rozšíří o sledování historie volání – při vstupu do metody se do seznamu (call stacku) zapíše jméno třídy a selektoru, při návratu se odstraní. Hlavní volání v metodě `execute` se obalí finálním `try-except`. Pokud výjimka probublá až sem, interpret vypíše nasbíraný stack trace na `stderr` a proces korektně ukončí chybovým kódem.
+   Řídící smyčka se rozšíří o sledování historie volání – při vstupu do metody se na na `call stack ` zapíše jméno třídy a selektoru, při návratu se odstraní. Hlavní volání v metodě `execute` se obalí finálním `try-except`. Pokud výjimka probublá až sem, interpret korektně ukončí běh s příslušným chybovým kódem a zprávou na  `stderr `.
 ---
 
 ## 7. Využití nástrojů umělé inteligence

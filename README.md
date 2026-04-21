@@ -19,7 +19,7 @@
 
 ## 1. Celkový návrh řešení
 
-Běh interpretu je logicky dekomponován do tří hlavních fází a opírá se o centrální mechanismus předávání zpráv.
+Běh interpretu je logicky rozdělen do tří hlavních fází a klíčovým mechanismem projektu je předávání zpráv.
 
 ### Průběh interpretace
 
@@ -34,13 +34,13 @@ Běh interpretu je logicky dekomponován do tří hlavních fází a opírá se 
     * shoda arity deklarovaných selektorů s aritou příslušných metodových bloků.
 
 * **Fáze 3: Spuštění a inicializace kontextu**
-    Po úspěšné analýze je vytvořena úvodní instance třídy `Main` a inicializuje se globální prostředí vázané na instanci třídy `Environment`. Toto prostředí uchovává aktuální kontext (`self_obj`, `super_obj`) a lexikálního vlastníka vyhodnocované metody (`lexical_class`), což je nezbytné pro správné fungování lexikálních uzávěrů a klíčového slova `super`. Běh programu je zahájen vyhodnocením bloku metody `run`.
+    Po úspěšné analýze je vytvořena úvodní instance třídy `Main` a inicializuje se globální prostředí vázané na instanci třídy `Environment`. Toto prostředí uchovává aktuální kontext (`self_obj`, `super_obj`) a  vlastníka vyhodnocované metody (`lexical_class`), což je nezbytné pro správné fungování lexikálních uzávěrů a klíčového slova `super`. Běh programu je zahájen vyhodnocením bloku metody `run`.
 
 ### Jádro interpretace a řízení toku
 
 * **Předávání zpráv:** Srdcem interpretace je metoda `send_message`. Jelikož je SOL26 čistě objektový jazyk, veškeré operace (včetně aritmetiky či přístupu k atributům) jsou realizovány výhradně zasíláním zpráv. Metoda `send_message` dynamicky reaguje na třídu příjemce (potomci `SOLObject` a `ClassLiteral`). Nejprve zkouší odbavit vestavěné operace základních typů. V případě uživatelských tříd prohledává řetězec dědičnosti s ohledem na lexikální kontext (`is_self`, `is_super`) a při nenalezení metody přechází k obsluze instančních atributů (přičemž detekuje kolize s bezparametrickými metodami).
 
-* **Řízení toku programu (podmínky a cykly):** Řízení toku není v jazyce SOL26 řešeno dedikovanými syntaktickými uzly (např. if/while příkazy), ale plně využívá čistě objektového přístupu a předávání zpráv.
+* **Řízení toku programu (podmínky a cykly):** Řízení toku není v jazyce SOL26 řešeno if/while příkazy, ale plně využívá čistě objektového přístupu a předávání zpráv.
     * **Podmínky (`ifTrue:ifFalse:`):** Jsou realizovány zasláním zprávy instancím vestavěných tříd `SOLTrue` a `SOLFalse`. Třída `True` jednoduše provede první blok, zatímco `False` ignoruje první a provede druhý blok.
       ```python
       # Ukázka z interpreter.py (vyhodnocení pro třídu True)
@@ -88,8 +88,27 @@ Datové struktury poskytnuté v šabloně projektu (např. `Program`, `ClassDef`
 Fáze statické sémantické kontroly byla vyčleněna z hlavní třídy `Interpreter` do samostatné třídy `SemanticAnalyzer`. To zajišťuje čistší návrh, zpřehledňuje samotnou třídu interpretu a umožňuje oddělené testování statické analýzy od běhové logiky.
 
 ### Polymorfismus na úrovni paměťového modelu
-Všechny hodnoty a proměnné v programu reprezentuje společná třída `SOLObject` nebo její specializovaní potomci. Místo složitého zjišťování typů předává interpret zprávy objektům na základě jejich předků (`inherits_from`), přičemž každá instance (`SOLInteger`, `SOLString` či uživatelsky definovaná třída) reaguje na příchozí selektory svými vymezenými metodami.
+Všechny hodnoty a proměnné v programu reprezentuje společná třída `SOLObject` nebo její specializovaní potomci. Místo složitého zjišťování typů předává interpret zprávy objektům na základě prověření jejich předků (pomocí interní funkce `inherits_from`), přičemž každá instance (např. `SOLInteger`, `SOLString` či uživatelsky definovaná třída) reaguje na příchozí selektory svými vymezenými metodami. Zpracování tak není řešeno složitým větvením (switch-case), ale deleguje se na samotný paměťový model.
 
+### Chain of Responsibility (Řetězec odpovědností) při správě paměti
+Tento návrhový vzor je ukázkově využit ve třídě `Environment` pro modelování lokálních rozsahů platnosti a lexikálních uzávěrů (closures). 
+
+* **Struktura řetězce:** Každý blok při svém spuštění obdrží instanci `Environment`, která drží slovník lokálních proměnných a odkaz na nadřazené prostředí v atributu `parent`.
+* **Delegace požadavku (`get_var`):** Pokud interpret požaduje hodnotu proměnné, aktuální prostředí zkontroluje své lokální proměnné. Pokud proměnnou nenajde, samo požadavek deleguje na svého předka.
+* **Zpracování nebo chyba:** Požadavek probublává řetězcem tak dlouho, dokud není proměnná nalezena, nebo dokud nedojde na konec řetězce (`None`), což vyústí ve statickou sémantickou chybu (výjimka `InterpreterError`).
+  ```python
+  # Ukázka z interpreter.py (aplikace Chain of Responsibility v Environment)
+  def get_var(self, name: str) -> SOLObject:
+      """Search variable in current scope, then recursively in parent scopes up chain."""
+      if name in self.variables:
+          return self.variables[name]
+      
+      # Delegace na další článek řetězce odpovědností
+      if self.parent is not None:
+          return self.parent.get_var(name)
+
+      # Konec řetězce - požadavek nebylo možné vyřídit
+      raise InterpreterError(ErrorCode.SEM_UNDEF, f"Undefined variable '{name}'")
 ---
 
 ## 5. Zásadní implementační problémy a jejich řešení

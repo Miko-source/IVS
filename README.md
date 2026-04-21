@@ -78,9 +78,29 @@ Aby mohl integrační testovací nástroj (vyvinutý v PHP) spolehlivě provád�
 
 ## 6. Možnosti dalšího rozšiřování
 
-### Zavedení polí a kolekcí *(Arrays)*
+1. **Nová běhová třída**
+   * V paměťovém modelu (konkrétně v `runtime.py`) by vznikla nová třída `SOLMessage` dědící ze `SOLObject`.
+   * Její interní reprezentací by byla struktura uchovávající název původního selektoru a předané argumenty.
+   * Objekt by uměl reagovat na následující zprávy:
+     * `selector`: vrátí název metody jako `SOLString`.
+     * `argumentCount`: vrátí počet argumentů jako `SOLInteger`.
+     * `argument:`: vrátí konkrétní argument podle indexu. (specifikace jazyka SOL26 bez rozšíření nepodporuje datovým type pro pole či kolekce. Proto místo vracení celého pole se  s argumenty pracuje čistě objektově formou postupného dotazování).
 
-Díky objektovému návrhu by zavedení polí znamenalo pouze přidání nové třídy `SOLArray`, která by dědila ze `SOLObject`. Její interní reprezentací (`internal_value`) by byl standardní datový typ `list` z Pythonu. V metodě `send_message` by pak přibyly větve pro odchycení specifických selektorů na tuto třídu (např. `add:`, `at:`, `size`). V paměťovém modelu jazyka SOL26 by instance polí fungovaly transparentně jako jakýkoliv jiný uživatelský objekt, čímž by se plně dodržela čistá objektovost jazyka.
+2. **Úprava metody `send_message` (Zachycení selhání)**
+   * Aktuálně metoda `send_message` vyhazuje chybu `INT_DNU` (kód 51), pokud nenalezne metodu ani atribut.
+   * Nově by se místo okamžitého pádu vytvořil objekt `SOLMessage`.
+   * Interpret by na původním příjemci rekurzivně zavolal něco jako: `self.send_message(receiver, "doesNotUnderstand:", [message_obj], ...)`.
+
+3. **Ochrana proti zacyklení**
+   * Aby se předešlo pádu interpretu (např. pokud by metoda `doesNotUnderstand:` chyběla nebo sama vyvolala neznámou zprávu), třída `Interpreter` by si udržovala zásobník probíhajících volání.
+   * Před voláním by se na tento zásobník přidala unikátní dvojice `(id(receiver), selector)`.
+   * Pokud by interpret při prohledávání zásobníku zjistil, že stejný příjemce už řeší DNU pro totožný selektor, okamžitě by vyvolal běhovou chybu 51.
+   * Po úspěšném odbavení by se tento záznam ze zásobníku opět odebral.
+
+4. **Fallback v logice třídy `Object`**
+   * Pro zajištění zpětné kompatibility by se do bloku zděděných metod třídy `Object` přidal selektor `doesNotUnderstand:`.
+   * Jeho výchozí implementací by bylo právě původní chování – vyhození výjimky `InterpreterError(ErrorCode.INT_DNU, ...)`.
+   * Uživatelské třídy by tak měly volnost tuto metodu přepsat. Pokud by to neudělaly, program by bezpečně spadl zcela standardním způsobem.
 
 ### Rozšíření o mechanismus výjimek (`on:do:` a `signal`)
 

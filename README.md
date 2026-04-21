@@ -66,7 +66,7 @@ Běh interpretu je logicky rozdělen do tří hlavních fází a klíčovým mec
 
 ## 2. UML Diagram tříd
 
-Níže uvedený diagram zachycuje zjednodušenou architekturu aplikace. Třídy ze vstupního AST modelu (šablony) jsou uvedeny v horní části a zjednodušeny pro přehlednost. Jádro implementace je tvořeno třídou `Interpreter` a hierarchií běhových objektů `SOLObject`.
+Níže uvedený diagram zachycuje zjednodušenou architekturu aplikace. Třídy ze vstupního AST modelu (šablony) jsou uvedeny v levé části a zjednodušeny pro přehlednost. Jádro implementace je tvořeno třídou `Interpreter` a hierarchií běhových objektů `SOLObject`.
 
 ![UML Diagram tříd](version_final.png)
 ## 3. Hlavní interní datové struktury

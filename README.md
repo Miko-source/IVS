@@ -47,7 +47,7 @@ Běh interpretu je logicky rozdělen do tří hlavních fází a klíčovým mec
 
 * **Řízení toku programu (podmínky a cykly):**
 
- Řízení toku není v jazyce SOL26 řešeno if/while příkazy, ale plně využívá čistě objektového přístupu a předávání zpráv.
+* Řízení toku není v jazyce SOL26 řešeno if/while příkazy, ale plně využívá čistě objektového přístupu a předávání zpráv.
     * **Podmínky (`ifTrue:ifFalse:`):** Jsou realizovány zasláním zprávy instancím vestavěných tříd `SOLTrue` a `SOLFalse`. Třída `True` jednoduše provede první blok, zatímco `False` ignoruje první a provede druhý blok.
       ```python
       # Ukázka z interpreter.py (vyhodnocení pro třídu True)
